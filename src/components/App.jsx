@@ -1,6 +1,5 @@
-import { nanoid } from 'nanoid';
 import React, { Component } from 'react';
-import { Searchbar, ImageGallery, ImageGalleryItem } from './';
+import { Searchbar, ImageGallery } from './';
 
 export class App extends Component {
   state = {
