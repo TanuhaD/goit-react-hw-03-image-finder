@@ -5,10 +5,12 @@ import fetchPictures from '../../utils/fetchAPI';
 import { Circles } from 'react-loader-spinner';
 import Modal from '../Modal/Modal';
 import { IMAGES_PER_PAGE } from '../../utils/constants';
+import Button from './Button/Button';
 
 export class ImageGallery extends Component {
   static propTypes = {
     query: PropTypes.string.isRequired,
+    notifyFunc: PropTypes.func.isRequired,
   };
 
   state = {
@@ -18,19 +20,23 @@ export class ImageGallery extends Component {
     totalPages: 1,
     isModalShown: false,
     modalImgUrl: '',
+    captionData: '',
   };
 
   async componentDidUpdate(prevProps, prevState) {
-    if (prevProps.query !== this.props.query) {
+    if (this.props.query !== prevProps.query) {
       this.setState({ loading: true });
       const data = await fetchPictures(this.props.query, 1);
+      if (!data.hits.length) {
+        this.props.notifyFunc('Nothing found for your request');
+      }
       this.setState({
         images: [...data.hits],
         page: 1,
         loading: false,
         totalPages: Math.ceil(data.totalHits / IMAGES_PER_PAGE),
       });
-    } else if (prevState.page !== this.state.page && this.state.page !== 1) {
+    } else if (this.state.page !== prevState.page && this.state.page > 1) {
       this.setState({ loading: true });
       const data = await fetchPictures(this.props.query, this.state.page);
       this.setState({
@@ -47,10 +53,11 @@ export class ImageGallery extends Component {
   };
 
   onImageClick = imageId => {
+    const imgInfo = this.state.images.find(({ id }) => id === imageId);
     this.setState({
       isModalShown: true,
-      modalImgUrl: this.state.images.find(({ id }) => id === imageId)
-        .largeImageURL,
+      modalImgUrl: imgInfo.largeImageURL,
+      captionData: imgInfo.tags,
     });
   };
 
@@ -80,18 +87,24 @@ export class ImageGallery extends Component {
               id={image.id}
               img={image.webformatURL}
               onImageClick={this.onImageClick}
+              alt={image.tags}
             />
           ))}
         </ul>
         {this.state.images.length > 0 &&
           this.state.page !== this.state.totalPages && (
-            <button type="button" onClick={this.nextPage}>
-              Load More
-            </button>
+            <Button onClick={this.nextPage}>Load More</Button>
           )}
         {this.state.isModalShown && (
           <Modal onClose={this.modalClose}>
-            <img src={this.state.modalImgUrl} alt="" />
+            <img
+              src={this.state.modalImgUrl}
+              alt={this.state.captionData}
+              onLoad={({ currentTarget }) => {
+                currentTarget.parentNode.classList.add('captionShow');
+              }}
+            />
+            <p className="CaptionData">{this.state.captionData}</p>
           </Modal>
         )}
       </>

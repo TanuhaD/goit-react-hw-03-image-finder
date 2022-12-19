@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 export class Searchbar extends Component {
   static propTypes = {
     setQuery: PropTypes.func.isRequired,
+    notifyFunc: PropTypes.func.isRequired,
   };
   state = {
     value: '',
@@ -19,7 +20,7 @@ export class Searchbar extends Component {
     if (normalizedQuery) {
       this.props.setQuery(normalizedQuery);
     } else {
-      alert('Enter query');
+      this.props.notifyFunc('Enter query');
     }
   };
 
