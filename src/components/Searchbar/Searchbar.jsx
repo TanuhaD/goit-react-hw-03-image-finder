@@ -32,9 +32,7 @@ export class Searchbar extends Component {
           autoComplete="off"
           className="SearchForm"
         >
-          <button type="submit" className="SearchForm-button">
-            <span className="button-label">Search</span>
-          </button>
+          <button type="submit" className="SearchForm-button"></button>
 
           <input
             value={this.state.value}

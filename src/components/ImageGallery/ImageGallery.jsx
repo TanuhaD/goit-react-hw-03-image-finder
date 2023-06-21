@@ -6,6 +6,7 @@ import { Circles } from 'react-loader-spinner';
 import Modal from '../Modal/Modal';
 import { IMAGES_PER_PAGE } from '../../utils/constants';
 import Button from './Button/Button';
+import throttle from 'lodash.throttle';
 
 export class ImageGallery extends Component {
   static propTypes = {
@@ -22,6 +23,14 @@ export class ImageGallery extends Component {
     modalImgUrl: '',
     captionData: '',
   };
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.throttledScrollHandler);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.throttledScrollHandler);
+  }
 
   async componentDidUpdate(prevProps, prevState) {
     if (this.props.query !== prevProps.query) {
@@ -45,6 +54,18 @@ export class ImageGallery extends Component {
       });
     }
   }
+
+  handleScroll = () => {
+    const { scrollHeight, scrollTop, clientHeight } = document.documentElement;
+    if (
+      this.state.page < this.state.totalPages &&
+      scrollHeight - clientHeight - scrollTop < 200
+    ) {
+      this.nextPage();
+    }
+  };
+
+  throttledScrollHandler = throttle(this.handleScroll.bind(this), 300);
 
   nextPage = () => {
     this.setState(prevState => ({
